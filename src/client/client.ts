@@ -12,35 +12,121 @@ document.body.appendChild(renderer.domElement)
 
 const controls = new OrbitControls(camera, renderer.domElement)
 
-const geometry = new THREE.BoxGeometry()
-const material = new THREE.MeshBasicMaterial({
-    color: 0x00ff00,
-    wireframe: true,
-})
+const floor = createFloor()
+scene.add(floor)
 
-const cube = new THREE.Mesh(geometry, material)
-scene.add(cube)
+const light = createLight()
+scene.add(light)
+
+const player = createPlayer()
+scene.add(player)
+
+const enemies = createEnemies()
+scene.add(...enemies)
 
 window.addEventListener('resize', onWindowResize, false)
 function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight
-    camera.updateProjectionMatrix()
-    renderer.setSize(window.innerWidth, window.innerHeight)
-    render()
+  camera.aspect = window.innerWidth / window.innerHeight
+  camera.updateProjectionMatrix()
+  renderer.setSize(window.innerWidth, window.innerHeight)
+  render()
 }
 
 function animate() {
-    requestAnimationFrame(animate)
+  requestAnimationFrame(animate)
 
-    cube.rotation.x += 0.01
-    cube.rotation.y += 0.01
+  enemies[0].translateX(0.1)
+  enemies[1].translateX(-0.1)
+  enemies[2].translateY(0.1)
+  enemies[3].translateY(-0.1)
+  enemies[4].translateZ(0.1)
+  enemies[5].translateZ(-0.1)
 
-    controls.update()
+  //   light.translateX(0.1)
+  //   light.translateY(0.1)
 
-    render()
+  controls.update()
+
+  checkCollisions()
+  render()
 }
 
 function render() {
-    renderer.render(scene, camera)
+  renderer.render(scene, camera)
+  listenKeyboardEvents()
 }
+
 animate()
+
+function createFloor() {
+  const geometry = new THREE.PlaneGeometry(10, 10, 1, 1)
+  const material = new THREE.MeshPhongMaterial({ color: 'darkgrey', side: THREE.DoubleSide })
+  const plane = new THREE.Mesh(geometry, material)
+  plane.position.set(0, -1, 0)
+  plane.rotateX(1.6)
+
+  return plane
+}
+
+function createLight() {
+  const light = new THREE.PointLight(0xff2, 10000, 10000, 100)
+  //   light.position.set(10, 10, 10)
+
+  return light
+}
+
+function createPlayer(): THREE.Mesh {
+  const geometry = new THREE.BoxGeometry()
+  const texture = new THREE.TextureLoader().load('grass.png')
+
+  const material = new THREE.MeshLambertMaterial({ map: texture })
+
+  const player = new THREE.Mesh(geometry, material)
+  return player
+}
+
+function createEnemies() {
+  const enemies: THREE.Mesh[] = []
+  const enemiesColors = ['red', 'blue', 'yellow', 'brown', 'purple', 'pink']
+
+  for (const color of enemiesColors) {
+    const geometry = new THREE.BoxGeometry()
+    const material = new THREE.MeshPhongMaterial({ color })
+    enemies.push(new THREE.Mesh(geometry, material))
+  }
+
+  return enemies
+}
+
+function listenKeyboardEvents() {
+  document.onkeydown = function (e) {
+    switch (e.keyCode) {
+      case 37:
+        player.rotation.z += 0.1
+        break
+      case 38:
+        player.rotation.x -= 0.1
+        break
+      case 39:
+        player.rotation.z -= 0.1
+        break
+      case 40:
+        player.rotation.x += 0.1
+        break
+      case 87:
+        player.translateY(0.1)
+        break
+      case 83:
+        player.translateY(-0.1)
+        break
+      case 65:
+        player.translateX(-0.1)
+        break
+      case 68:
+        player.translateX(0.1)
+        break
+    }
+  }
+}
+
+function checkCollisions() {}
