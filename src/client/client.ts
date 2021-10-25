@@ -42,12 +42,14 @@ function animate() {
   enemies[4].translateZ(0.01)
   enemies[5].translateZ(-0.01)
 
-  controls.update()
-
   const colliding = isPlayerColliding()
   if (colliding) {
-    console.log('player is colliding')
+    player.scale.set(1.5, 1.5, 1.5)
+  } else {
+    player.scale.set(1, 1, 1)
   }
+
+  controls.update()
   render()
 }
 
@@ -60,7 +62,10 @@ listenKeyboardEvents()
 
 function createFloor() {
   const geometry = new THREE.PlaneGeometry(100, 100, 1, 1)
-  const material = new THREE.MeshPhongMaterial({ color: 'darkgrey', side: THREE.DoubleSide })
+  const material = new THREE.MeshPhongMaterial({
+    map: new THREE.TextureLoader().load('assets/dirt.png'),
+    side: THREE.DoubleSide,
+  })
   const plane = new THREE.Mesh(geometry, material)
   plane.position.set(0, -1, 0)
   plane.rotateX(1.6)
@@ -81,9 +86,9 @@ function createLights() {
 
 function createPlayer(): THREE.Mesh {
   const geometry = new THREE.BoxGeometry()
-  const texture = new THREE.TextureLoader().load('grass.png')
-
-  const material = new THREE.MeshLambertMaterial({ map: texture })
+  const material = new THREE.MeshLambertMaterial({
+    map: new THREE.TextureLoader().load('assets/diamond_ore.png'),
+  })
 
   const player = new THREE.Mesh(geometry, material)
   player.geometry.computeBoundingBox()
@@ -93,11 +98,21 @@ function createPlayer(): THREE.Mesh {
 
 function createEnemies() {
   const enemies: THREE.Mesh[] = []
-  const enemiesColors = ['red', 'blue', 'yellow', 'brown', 'purple', 'pink']
+  const enemiesTextures = [
+    'beacon',
+    'emerald_block',
+    'glowstone',
+    'grass_side',
+    'gravel',
+    'melon_side',
+  ]
 
-  for (const color of enemiesColors) {
+  for (const enemyTexture of enemiesTextures) {
     const geometry = new THREE.BoxGeometry()
-    const material = new THREE.MeshPhongMaterial({ color })
+    const material = new THREE.MeshLambertMaterial({
+      map: new THREE.TextureLoader().load(`assets/${enemyTexture}.png`),
+    })
+
     const enemy = new THREE.Mesh(geometry, material)
     enemy.geometry.computeBoundingBox()
     enemy.updateMatrixWorld()
