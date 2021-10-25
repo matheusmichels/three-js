@@ -15,18 +15,14 @@ const controls = new OrbitControls(camera, renderer.domElement)
 const floor = createFloor()
 scene.add(floor)
 
-const light = createLight()
-scene.add(light)
+const lights = createLights()
+scene.add(...lights)
 
 const player = createPlayer()
 scene.add(player)
 
 const enemies = createEnemies()
 scene.add(...enemies)
-
-const ambientLight = new THREE.AmbientLight(0xccc, 1)
-ambientLight.position.set(0, 5, 0)
-scene.add(ambientLight)
 
 window.addEventListener('resize', onWindowResize, false)
 function onWindowResize() {
@@ -48,7 +44,10 @@ function animate() {
 
   controls.update()
 
-  checkCollisions()
+  const colliding = isPlayerColliding()
+  if (colliding) {
+    console.log('player is colliding')
+  }
   render()
 }
 
@@ -69,11 +68,15 @@ function createFloor() {
   return plane
 }
 
-function createLight() {
+function createLights() {
   const light = new THREE.PointLight('#fff', 2, 100)
   light.position.set(0, 5, 0)
 
-  return light
+  const ambientLight = new THREE.AmbientLight(0xccc, 1)
+  ambientLight.position.set(0, 5, 0)
+  scene.add(ambientLight)
+
+  return [light, ambientLight]
 }
 
 function createPlayer(): THREE.Mesh {
@@ -83,6 +86,8 @@ function createPlayer(): THREE.Mesh {
   const material = new THREE.MeshLambertMaterial({ map: texture })
 
   const player = new THREE.Mesh(geometry, material)
+  player.geometry.computeBoundingBox()
+  player.updateMatrixWorld()
   return player
 }
 
@@ -93,7 +98,10 @@ function createEnemies() {
   for (const color of enemiesColors) {
     const geometry = new THREE.BoxGeometry()
     const material = new THREE.MeshPhongMaterial({ color })
-    enemies.push(new THREE.Mesh(geometry, material))
+    const enemy = new THREE.Mesh(geometry, material)
+    enemy.geometry.computeBoundingBox()
+    enemy.updateMatrixWorld()
+    enemies.push(enemy)
   }
 
   return enemies
@@ -130,4 +138,14 @@ function listenKeyboardEvents() {
   }
 }
 
-function checkCollisions() {}
+function isPlayerColliding() {
+  const playerBox = player.geometry.boundingBox!.clone()
+  playerBox.applyMatrix4(player.matrixWorld)
+
+  return enemies.some((enemy) => {
+    const enemyBox = enemy.geometry.boundingBox!.clone()
+    enemyBox.applyMatrix4(enemy.matrixWorld)
+
+    return playerBox.intersectsBox(enemyBox)
+  })
+}
