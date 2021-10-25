@@ -24,6 +24,10 @@ scene.add(player)
 const enemies = createEnemies()
 scene.add(...enemies)
 
+const ambientLight = new THREE.AmbientLight(0xccc, 1)
+ambientLight.position.set(0, 5, 0)
+scene.add(ambientLight)
+
 window.addEventListener('resize', onWindowResize, false)
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight
@@ -35,15 +39,12 @@ function onWindowResize() {
 function animate() {
   requestAnimationFrame(animate)
 
-  enemies[0].translateX(0.1)
-  enemies[1].translateX(-0.1)
-  enemies[2].translateY(0.1)
-  enemies[3].translateY(-0.1)
-  enemies[4].translateZ(0.1)
-  enemies[5].translateZ(-0.1)
-
-  //   light.translateX(0.1)
-  //   light.translateY(0.1)
+  enemies[0].translateX(0.01)
+  enemies[1].translateX(-0.01)
+  enemies[2].translateY(0.01)
+  enemies[3].translateY(-0.01)
+  enemies[4].translateZ(0.01)
+  enemies[5].translateZ(-0.01)
 
   controls.update()
 
@@ -53,13 +54,13 @@ function animate() {
 
 function render() {
   renderer.render(scene, camera)
-  listenKeyboardEvents()
 }
 
 animate()
+listenKeyboardEvents()
 
 function createFloor() {
-  const geometry = new THREE.PlaneGeometry(10, 10, 1, 1)
+  const geometry = new THREE.PlaneGeometry(100, 100, 1, 1)
   const material = new THREE.MeshPhongMaterial({ color: 'darkgrey', side: THREE.DoubleSide })
   const plane = new THREE.Mesh(geometry, material)
   plane.position.set(0, -1, 0)
@@ -69,8 +70,8 @@ function createFloor() {
 }
 
 function createLight() {
-  const light = new THREE.PointLight(0xff2, 10000, 10000, 100)
-  //   light.position.set(10, 10, 10)
+  const light = new THREE.PointLight('#fff', 2, 100)
+  light.position.set(0, 5, 0)
 
   return light
 }
